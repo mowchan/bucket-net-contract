@@ -1,6 +1,6 @@
 pragma solidity ^0.4.19;
 
-contract GrowFactory {
+contract BucketNet {
   // Grow identifying information, environmental data, component states
   struct Grow {
     uint id;
