@@ -18,21 +18,21 @@ contract GrowFactory {
   // Grow added
   event GrowAdded(uint id, string name);
   // Temperature changed
-  event TempChange(uint temp);
+  event TempChange(uint id, uint temp);
   // Humidity changed
-  event HumidityChange(uint humidity);
+  event HumidityChange(uint id, uint humidity);
   // Soil Moisture changed
-  event SoilMoistureChange(uint soilMoisture);
+  event SoilMoistureChange(uint id, uint soilMoisture);
   // Light Intensity changed
-  event LightIntensityChange(uint lightIntensity);
+  event LightIntensityChange(uint id, uint lightIntensity);
   // Intake toggled on/off
-  event IntakeToggled(bool intakeActive);
+  event IntakeToggled(uint id, bool intakeActive);
   // Exhaust toggled on/off
-  event ExhaustToggled(bool exhaustActive);
+  event ExhaustToggled(uint id, bool exhaustActive);
   // Water toggled on/off
-  event WaterToggled(bool waterActive);
+  event WaterToggled(uint id, bool waterActive);
   // Light toggled on/off
-  event LightToggled(bool lightActive);
+  event LightToggled(uint id, bool lightActive);
 
   // Associate Grow with an owner address
   mapping(uint => address) public growToOwner;
@@ -69,53 +69,53 @@ contract GrowFactory {
   function setTemp(uint _growId, uint _newTemp) public {
     require(isPermittedAddress(_growId, msg.sender));
     grows[_growId].temp = _newTemp;
-    TempChange(_newTemp);
+    TempChange(_growId, _newTemp);
   }
 
   function setHumidity(uint _growId, uint _newHumidity) public {
     require(isPermittedAddress(_growId, msg.sender));
     grows[_growId].humidity = _newHumidity;
-    HumidityChange(_newHumidity);
+    HumidityChange(_growId, _newHumidity);
   }
 
   function setSoilMoisture(uint _growId, uint _newSoilMoisture) public {
     require(isPermittedAddress(_growId, msg.sender));
     grows[_growId].soilMoisture = _newSoilMoisture;
-    SoilMoistureChange(_newSoilMoisture);
+    SoilMoistureChange(_growId, _newSoilMoisture);
   }
 
   function setLightIntensity(uint _growId, uint _newLightIntensity) public {
     require(isPermittedAddress(_growId, msg.sender));
     grows[_growId].lightIntensity = _newLightIntensity;
-    LightIntensityChange(_newLightIntensity);
+    LightIntensityChange(_growId, _newLightIntensity);
   }
 
   function toggleIntake(uint _growId) public {
     require(isPermittedAddress(_growId, msg.sender));
     bool newIntakeActive = !grows[_growId].intakeActive;
     grows[_growId].intakeActive = newIntakeActive;
-    IntakeToggled(newIntakeActive);
+    IntakeToggled(_growId, newIntakeActive);
   }
 
   function toggleExhaust(uint _growId) public {
     require(isPermittedAddress(_growId, msg.sender));
     bool newExhaustActive = !grows[_growId].exhaustActive;
     grows[_growId].exhaustActive = newExhaustActive;
-    ExhaustToggled(newExhaustActive);
+    ExhaustToggled(_growId, newExhaustActive);
   }
 
   function toggleWater(uint _growId) public {
     require(isPermittedAddress(_growId, msg.sender));
     bool newWaterActive = !grows[_growId].waterActive;
     grows[_growId].waterActive = newWaterActive;
-    WaterToggled(newWaterActive);
+    WaterToggled(_growId, newWaterActive);
   }
 
   function toggleLight(uint _growId) public {
     require(isPermittedAddress(_growId, msg.sender));
     bool newLightActive = !grows[_growId].lightActive;
     grows[_growId].lightActive = newLightActive;
-    LightToggled(newLightActive);
+    LightToggled(_growId, newLightActive);
   }
 
   // Getters
