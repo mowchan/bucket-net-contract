@@ -5,13 +5,13 @@ contract BucketNet {
   struct Grow {
     uint id;
     string name;
+    string ipAddress;
     uint temp;
     uint humidity;
     uint soilMoisture;
     uint lightIntensity;
     bool intakeActive;
     bool exhaustActive;
-    bool waterActive;
     bool lightActive;
   }
 
@@ -25,12 +25,14 @@ contract BucketNet {
   event SoilMoistureChange(uint id, uint soilMoisture);
   // Light Intensity changed
   event LightIntensityChange(uint id, uint lightIntensity);
+  // IP Address changed
+  event IpChange(uint id, string ipAddress);
   // Intake toggled on/off
   event IntakeToggled(uint id, bool intakeActive);
   // Exhaust toggled on/off
   event ExhaustToggled(uint id, bool exhaustActive);
   // Water toggled on/off
-  event WaterToggled(uint id, bool waterActive);
+  event WaterToggled(uint id);
   // Light toggled on/off
   event LightToggled(uint id, bool lightActive);
 
@@ -38,6 +40,10 @@ contract BucketNet {
   mapping(uint => address) public growToOwner;
   // Associate Grow with a bucket address
   mapping(uint => address) public growToBucket;
+  // Associate Owner with a Grow count
+  mapping(address => uint) public ownerGrowCount;
+  // Associate Owner with growIds
+  mapping(address => uint[]) public ownerToGrow;
 
   // Unique Grow identifier
   uint currentGrowId = 0;
@@ -50,9 +56,11 @@ contract BucketNet {
   // Trigger GrowAdded event
   // Increment unique Grow identifier
   function createGrow(string _newName, address _newBucketAddress) public {
-    grows.push(Grow(currentGrowId, _newName, 0, 0, 0, 0, false, false, false, false));
+    grows.push(Grow(currentGrowId, _newName, '', 0, 0, 0, 0, false, false, false));
     growToOwner[currentGrowId] = msg.sender;
     growToBucket[currentGrowId] = _newBucketAddress;
+    ownerGrowCount[msg.sender] += 1;
+    ownerToGrow[msg.sender].push(currentGrowId);
     GrowAdded(currentGrowId, _newName);
     currentGrowId++;
   }
@@ -60,6 +68,16 @@ contract BucketNet {
   // Address permission helper
   function isPermittedAddress(uint _growId, address _senderAddress) private constant returns (bool) {
     return _senderAddress == growToOwner[_growId] || _senderAddress == growToBucket[_growId];
+  }
+
+  // Get number of Grows for an Owner
+  function getGrowCount(address _ownerAddress) public constant returns (uint) {
+    return ownerGrowCount[_ownerAddress];
+  }
+
+  // Get Grow at index for Owner
+  function getGrowIdByIndex(uint _index) public constant returns (uint) {
+    return ownerToGrow[msg.sender][_index];
   }
 
   // Setters
@@ -90,6 +108,12 @@ contract BucketNet {
     LightIntensityChange(_growId, _newLightIntensity);
   }
 
+  function setIpAddress(uint _growId, string _newIpAddress) public {
+    require(isPermittedAddress(_growId, msg.sender));
+    grows[_growId].ipAddress = _newIpAddress;
+    IpChange(_growId, _newIpAddress);
+  }
+
   function toggleIntake(uint _growId) public {
     require(isPermittedAddress(_growId, msg.sender));
     bool newIntakeActive = !grows[_growId].intakeActive;
@@ -106,9 +130,7 @@ contract BucketNet {
 
   function toggleWater(uint _growId) public {
     require(isPermittedAddress(_growId, msg.sender));
-    bool newWaterActive = !grows[_growId].waterActive;
-    grows[_growId].waterActive = newWaterActive;
-    WaterToggled(_growId, newWaterActive);
+    WaterToggled(_growId);
   }
 
   function toggleLight(uint _growId) public {
@@ -135,16 +157,16 @@ contract BucketNet {
     return grows[_growId].lightIntensity;
   }
 
+  function getIpAddress(uint _growId) public constant returns (string) {
+    return grows[_growId].ipAddress;
+  }
+
   function isIntakeActive(uint _growId) public constant returns (bool) {
     return grows[_growId].intakeActive;
   }
 
   function isExhaustActive(uint _growId) public constant returns (bool) {
     return grows[_growId].exhaustActive;
-  }
-
-  function isWaterActive(uint _growId) public constant returns (bool) {
-    return grows[_growId].waterActive;
   }
 
   function isLightActive(uint _growId) public constant returns (bool) {
